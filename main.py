@@ -13,6 +13,8 @@ player_x = 240
 move_speed = 1.5
 fall_tick = 0
 scene_row = 1
+
+text = None
 blocks = [
    
 ]
@@ -126,8 +128,39 @@ while running:
 
 pygame.quit()
 
-#pretend game.py is real
-# import Game
-# if __name__ == "__main__":
-#     game = Game()
-#     game.runGame()
+# #pretend game.py is real
+# # import Game
+# # if __name__ == "__main__":
+# #     game = Game()
+# #     game.runGame()
+
+# import pygame
+# from GameScene import GameScene
+# from MenuScene import MenuScene
+# def run_game(width, height, fps, starting_scene):
+#     pygame.init()
+#     screen = pygame.display.set_mode((width, height))
+#     clock = pygame.time.Clock()
+
+#     current_scene = starting_scene
+
+#     while current_scene != None:
+#         pressed_keys = pygame.key.get_pressed() 
+#         filtered_events = []
+#         for event in pygame.event.get():
+#             quit_attempt = False
+#             if event.type == pygame.QUIT:
+#                 quit_attempt = True
+#             elif event.type == pygame.KEYDOWN:
+#                 if event.key == pygame.K_ESCAPE:
+#                     quit_attempt = True
+#             if quit_attempt:
+#                 current_scene.Terminate()
+#             else:
+#                 filtered_events.append(event)
+#         current_scene.ProcessInput(filtered_events, pressed_keys)
+#         current_scene.Update()
+#         current_scene.Render(screen)
+#         pygame.display.flip()
+#         clock.tick(fps)
+# run_game(480, 360,60, GameScene())
