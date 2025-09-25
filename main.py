@@ -37,10 +37,9 @@ scenes = {1:[
 spikes = {1:[],2:[[(170,300),(215,260),(260,300)]],}
 
 coins = {
-    1:[[240,180]],
+    1:[(180,60,40,50)],
     2:[]
 }
-
 def create_eyes(x,y):
     pygame.draw.rect(screen,"white",(x + 5,y + 5, 15,20))
     pygame.draw.rect(screen,"white",(x + 30,y + 5, 15,20))
@@ -125,7 +124,9 @@ while running:
         if player.colliderect(spike):
             set_up(1,240,180)
     for selected_coin in selected_coins:
-        c = pygame.draw.ellipse(screen,(255,212,0),(240,180,40,50))
+        c = pygame.draw.ellipse(screen,(255,164,0),(selected_coin))
+        pygame.draw.ellipse(screen,(255,212,0),(selected_coin),5)
+        pygame.draw.rect(screen,(255,212,0),(selected_coin[0]+ 20,selected_coin[1] + 10,5,30))
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP] and fall_tick == 0:
         velocity_y = -10
