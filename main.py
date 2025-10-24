@@ -1,27 +1,21 @@
 import pygame
+from GameScene import GameScene
+from Player import Player
 
 pygame.init()
 screen = pygame.display.set_mode((480, 360))
 clock = pygame.time.Clock()
 running = True
 dt = 0
-velocity_y = 0
-velocity_x = 0
 gravity = -0.5
-player_y = 180
-player_x = 240
 move_speed = 1.5
 fall_tick = 0
 scene_row = 1
-
 text = None
 blocks = [
    
 ]
 selected_spikes = []
-selected_coins = []
-list_scenes = []
-list_coins = []
 scenes = {1:[
              pygame.Rect(0, 300, 480, 60),
              pygame.Rect(360, 240, 120, 60),
@@ -36,73 +30,73 @@ scenes = {1:[
             pygame.Rect(260,220,140,100)]}
 spikes = {1:[],2:[[(170,300),(215,260),(260,300)]],}
 
-coins = {
-    1:[(180,60,40,50)],
-    2:[]
-}
-def create_eyes(x,y):
-    pygame.draw.rect(screen,"white",(x + 5,y + 5, 15,20))
-    pygame.draw.rect(screen,"white",(x + 30,y + 5, 15,20))
-    pygame.draw.rect(screen,"black",(x + 10,y + 10, 5,10))
-    pygame.draw.rect(screen,"black",(x + 35,y + 10, 5,10))
 
-def set_up(id,x,y):
-    global scenes,player_x,player_y,list_scenes,list_spikes,selected_coins,coins,list_coins
-    if id in scenes:
-        list_scenes = scenes[id]
-        list_spikes = spikes[id]
-        list_coins = coins[id]
-        blocks.clear()
-        selected_spikes.clear()
-        selected_coins.clear()
-        for list_scene in list_scenes:
-            blocks.append(list_scene)
-        for list_spike in list_spikes:
-            selected_spikes.append(list_spike)
-        for list_coin in list_coins:
-            selected_coins.append(list_coin)
-        print(selected_spikes)
-        player_x = x
-        player_y = y
+actualPlayer = Player(screen)
+actualScene = GameScene()
+
+def set_up(id, x, y):
+    list_scenes = []
+    list_coins = []
+    list_spikes = []
+    coins = {
+        1:[(180,60,40,50)],
+        2:[]
+    }
+    
+    list_scenes = scenes[id]
+    list_spikes = spikes[id]
+    list_coins = coins[id]
+    blocks.clear()
+    selected_spikes.clear()
+    actualScene.clear_selected_coins()
+    for list_scene in list_scenes:
+        blocks.append(list_scene)
+    for list_spike in list_spikes:
+        selected_spikes.append(list_spike)
+    for list_coin in list_coins:
+        actualScene.append_coins(list_coin)
+    actualPlayer.update_xy(x,y)
 set_up(scene_row,240,180)
-print(selected_coins)
-def fix_overlap():
-    global velocity_y, player_y, fall_tick
-    if velocity_y > 0:
-        player_y -= velocity_y
-        velocity_y = 0 #- velocity_y / 2
-        fall_tick = 0
-    elif velocity_y < 0:
-        player_y -= velocity_y
-        velocity_y = 0
 
+def fix_overlap():
+    global fall_tick
+    if actualPlayer.get_vel_y() > 0:
+        actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() - actualPlayer.get_vel_y())
+        actualPlayer.update_vx_vy(actualPlayer.get_vel_x(),0)
+        fall_tick = 0
+    elif actualPlayer.get_vel_y() < 0:
+        actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() - actualPlayer.get_vel_y())
+        actualPlayer.update_vx_vy(actualPlayer.get_vel_x(),0)
+        
 
 def move(x):
-    global velocity_x, player_x, player_y,scene_row
-    player_x += x
-    player_y -= 3
-    player = pygame.draw.rect(screen, "red", (player_x, player_y, 50, 50))
+    global  scene_row
+    actualPlayer.update_xy(actualPlayer.get_x() + x,actualPlayer.get_y() -3)
+    player = pygame.draw.rect(screen, "orange", (actualPlayer.get_x(), actualPlayer.get_y(), 50, 50))
     for block in blocks:
         if player.colliderect(block):
-            player_x -= x
-            player = pygame.draw.rect(screen, "red",
-                                      (player_x, player_y, 50, 50))
-            velocity_x = 0
-    player_y += 3
-    if player_x > 480:
+            actualPlayer.update_xy(actualPlayer.get_x() - x,actualPlayer.get_y())
+            player = pygame.draw.rect(screen, "orange",
+                                      (actualPlayer.get_x(), actualPlayer.get_y(), 50, 50))
+          
+            actualPlayer.update_vx_vy(0,actualPlayer.get_vel_y())
+    actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() + 3)
+    if actualPlayer.get_x() > 480:
         if scene_row + 1 in scenes:
             scene_row += 1
-            set_up(scene_row,0,player_y)
+            set_up(scene_row,0,actualPlayer.get_y())
         else:
-            player_x += x
-            velocity_x = 0
-    if player_x < 0:
+            actualPlayer.update_xy(actualPlayer.get_x() + x,actualPlayer.get_y())
+            actualPlayer.update_vx_vy(0,actualPlayer.get_vel_y())
+    if actualPlayer.get_x() < 0:
         if scene_row - 1 in scenes:
             scene_row -= 1
-            set_up(scene_row,480,player_y)
+            set_up(scene_row,480,actualPlayer.get_y())
         else:
-            player_x -= x
-            velocity_x = 0
+            actualPlayer.update_xy(actualPlayer.get_x() - x,actualPlayer.get_y())
+            actualPlayer.update_vx_vy(0,actualPlayer.get_vel_y())
+
+originalPlayer = Player(screen)
 while running:
 
     for event in pygame.event.get():
@@ -111,36 +105,36 @@ while running:
 
     screen.fill("blue")
 
-    velocity_x *= 0.6
-    player = pygame.draw.rect(screen, "orange", (player_x, player_y, 50, 50))
-    create_eyes(player_x + velocity_x,player_y + velocity_y)
+    actualPlayer.update_vx_vy(actualPlayer.get_vel_x() * 0.6,actualPlayer.get_vel_y())
+    actualPlayer.set_up_sprite()
+    actualPlayer.create_eyes(actualPlayer.get_x() + actualPlayer.get_vel_x(), actualPlayer.get_y() + actualPlayer.get_vel_y(), screen)
     for block in blocks:
         pygame.draw.rect(screen, "purple", block)
-        if player.colliderect(block):
+        if actualPlayer.collide(block):
             fix_overlap()
     for selected_spike in selected_spikes:
         spike = pygame.draw.polygon(screen, "red",selected_spike)
         
-        if player.colliderect(spike):
+        if actualPlayer.collide(spike):
             set_up(1,240,180)
-    for selected_coin in selected_coins:
+    for selected_coin in actualScene.get_selected_coins():
         c = pygame.draw.ellipse(screen,(255,164,0),(selected_coin))
         pygame.draw.ellipse(screen,(255,212,0),(selected_coin),5)
-        pygame.draw.rect(screen,(255,212,0),(selected_coin[0]+ 20,selected_coin[1] + 10,5,30))
+        pygame.draw.rect(screen,(255,212,0),(selected_coin[0]+ 18.5,selected_coin[1] + 10,5,30))
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP] and fall_tick == 0:
-        velocity_y = -10
+        actualPlayer.update_vx_vy(actualPlayer.get_vel_x(),-10)
     if keys[pygame.K_s]:
         pass
     if keys[pygame.K_LEFT]:
-        velocity_x -= move_speed
+        actualPlayer.update_vx_vy(actualPlayer.get_vel_x() - move_speed,actualPlayer.get_vel_y())
     if keys[pygame.K_RIGHT]:
-        velocity_x += move_speed
-    velocity_y -= gravity
+        actualPlayer.update_vx_vy(actualPlayer.get_vel_x() + move_speed,actualPlayer.get_vel_y())
+    actualPlayer.update_vx_vy(actualPlayer.get_vel_x(),actualPlayer.get_vel_y() - gravity)
 
     pygame.display.flip()
-    player_y += velocity_y
-    move(velocity_x)
+    actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() + actualPlayer.get_vel_y())
+    move(actualPlayer.get_vel_x())
     fall_tick += 1
 
     dt = clock.tick(60) / 1000
