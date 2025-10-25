@@ -119,12 +119,13 @@ while running:
         
         if actualPlayer.collide(spike):
             set_up(1,240,180)
+            score = 0
     for selected_coin in actualScene.get_selected_coins():
         c = pygame.draw.ellipse(screen,(255,164,0),(selected_coin))
         pygame.draw.ellipse(screen,(255,212,0),(selected_coin),5)
         pygame.draw.rect(screen,(255,212,0),(selected_coin[0]+ 18.5,selected_coin[1] + 10,5,30))
         if actualPlayer.collide(c):
-            #actualScene.remove_coin(selected_coin)
+            actualScene.remove_coin(selected_coin)
             score += 1
         
             
