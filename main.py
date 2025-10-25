@@ -9,9 +9,10 @@ running = True
 dt = 0
 gravity = -0.5
 move_speed = 1.5
-fall_tick = 0
-scene_row = 1
-text = None
+red = (255,0,0)
+black = (0,0,0)
+font = pygame.font.Font('freesansbold.ttf', 30)
+score = 0
 blocks = [
    
 ]
@@ -56,21 +57,19 @@ def set_up(id, x, y):
     for list_coin in list_coins:
         actualScene.append_coins(list_coin)
     actualPlayer.update_xy(x,y)
-set_up(scene_row,240,180)
+set_up(1,240,180)
 
 def fix_overlap():
-    global fall_tick
     if actualPlayer.get_vel_y() > 0:
         actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() - actualPlayer.get_vel_y())
         actualPlayer.update_vx_vy(actualPlayer.get_vel_x(),0)
-        fall_tick = 0
+        actualPlayer.set_fall_tick(0)
     elif actualPlayer.get_vel_y() < 0:
         actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() - actualPlayer.get_vel_y())
         actualPlayer.update_vx_vy(actualPlayer.get_vel_x(),0)
         
 
 def move(x):
-    global  scene_row
     actualPlayer.update_xy(actualPlayer.get_x() + x,actualPlayer.get_y() -3)
     player = pygame.draw.rect(screen, "orange", (actualPlayer.get_x(), actualPlayer.get_y(), 50, 50))
     for block in blocks:
@@ -82,16 +81,16 @@ def move(x):
             actualPlayer.update_vx_vy(0,actualPlayer.get_vel_y())
     actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() + 3)
     if actualPlayer.get_x() > 480:
-        if scene_row + 1 in scenes:
-            scene_row += 1
-            set_up(scene_row,0,actualPlayer.get_y())
+        if actualScene.get_scene_row() + 1 in scenes:
+            actualScene.change_scene_row(1)
+            set_up(actualScene.get_scene_row(),0,actualPlayer.get_y())
         else:
             actualPlayer.update_xy(actualPlayer.get_x() + x,actualPlayer.get_y())
             actualPlayer.update_vx_vy(0,actualPlayer.get_vel_y())
     if actualPlayer.get_x() < 0:
-        if scene_row - 1 in scenes:
-            scene_row -= 1
-            set_up(scene_row,480,actualPlayer.get_y())
+        if actualScene.get_scene_row() - 1 in scenes:
+            actualScene.change_scene_row(-1)
+            set_up(actualScene.get_scene_row(),480,actualPlayer.get_y())
         else:
             actualPlayer.update_xy(actualPlayer.get_x() - x,actualPlayer.get_y())
             actualPlayer.update_vx_vy(0,actualPlayer.get_vel_y())
@@ -104,7 +103,10 @@ while running:
             running = False
 
     screen.fill("blue")
-
+    text = font.render(f"score: {score}", True, red,black)
+    textRect = text.get_rect()
+    textRect.center = (60 + len(str(score)) * 8,30)
+    screen.blit(text,textRect)
     actualPlayer.update_vx_vy(actualPlayer.get_vel_x() * 0.6,actualPlayer.get_vel_y())
     actualPlayer.set_up_sprite()
     actualPlayer.create_eyes(actualPlayer.get_x() + actualPlayer.get_vel_x(), actualPlayer.get_y() + actualPlayer.get_vel_y(), screen)
@@ -121,8 +123,13 @@ while running:
         c = pygame.draw.ellipse(screen,(255,164,0),(selected_coin))
         pygame.draw.ellipse(screen,(255,212,0),(selected_coin),5)
         pygame.draw.rect(screen,(255,212,0),(selected_coin[0]+ 18.5,selected_coin[1] + 10,5,30))
+        if actualPlayer.collide(c):
+            #actualScene.remove_coin(selected_coin)
+            score += 1
+        
+            
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_UP] and fall_tick == 0:
+    if keys[pygame.K_UP] and actualPlayer.get_fall_tick() == 0:
         actualPlayer.update_vx_vy(actualPlayer.get_vel_x(),-10)
     if keys[pygame.K_s]:
         pass
@@ -135,7 +142,7 @@ while running:
     pygame.display.flip()
     actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() + actualPlayer.get_vel_y())
     move(actualPlayer.get_vel_x())
-    fall_tick += 1
+    actualPlayer.set_fall_tick(actualPlayer.get_fall_tick() + 1)
 
     dt = clock.tick(60) / 1000
 

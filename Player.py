@@ -9,6 +9,7 @@ class Player():
     self.sprite = None
     self.screen = screen
     self.gravity = -0.5
+    self.fall_tick = 0
     
   def set_up_sprite(self):
     self.sprite = pygame.draw.rect(self.screen, "orange",(self.x, self.y, 50,50))
@@ -41,7 +42,12 @@ class Player():
     
   def get_vel_y(self):
     return self.velocity_y
-    
+
+  def get_fall_tick(self):
+    return self.fall_tick
+
+  def set_fall_tick(self,x):
+    self.fall_tick = x
   def move(self, x, scene):
     self.x += x
     self.y -= 3
