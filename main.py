@@ -26,10 +26,11 @@ scenes = {1:[
              pygame.Rect(300, 80, 120, 30)
          ],
          2:[pygame.Rect(0, 300, 480, 60),
-            pygame.Rect(0, 240, 170, 60),
+            pygame.Rect(0, 240, 190, 60),
             pygame.Rect(260,150,70,150),
-            pygame.Rect(260,220,140,100)]}
-spikes = {1:[],2:[[(170,300),(215,260),(260,300)]],}
+            pygame.Rect(260,220,140,100)],
+         3:[pygame.Rect(0, 300, 480, 60)]}
+spikes = {1:[],2:[[(190,300),(225,260),(260,300)]],3:[[(170,300),(190,270),(210,300)]]}
 
 
 actualPlayer = Player(screen)
@@ -41,7 +42,8 @@ def set_up(id, x, y):
     list_spikes = []
     coins = {
         1:[(180,60,40,50)],
-        2:[]
+        2:[],
+        3:[(210,190,40,50)]
     }
     
     list_scenes = scenes[id]
@@ -57,7 +59,7 @@ def set_up(id, x, y):
     for list_coin in list_coins:
         actualScene.append_coins(list_coin)
     actualPlayer.update_xy(x,y)
-set_up(1,240,180)
+set_up(actualScene.get_scene_row(),240,180)
 
 def fix_overlap():
     if actualPlayer.get_vel_y() > 0:
@@ -118,7 +120,8 @@ while running:
         spike = pygame.draw.polygon(screen, "red",selected_spike)
         
         if actualPlayer.collide(spike):
-            set_up(1,240,180)
+            actualScene.set_scene_row(1)
+            set_up(actualScene.get_scene_row(),240,180)
             score = 0
     for selected_coin in actualScene.get_selected_coins():
         c = pygame.draw.ellipse(screen,(255,164,0),(selected_coin))

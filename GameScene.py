@@ -1,4 +1,4 @@
-import pygame
+
 class GameScene():
     def __init__(self):
         self.selected_coins = []
@@ -18,6 +18,8 @@ class GameScene():
 
     def get_scene_row(self):
         return self.scene_row
-
+    def set_scene_row(self,x):
+        self.scene_row = x
+    
     def remove_coin(self,coin):
         self.selected_coins.remove(coin)
