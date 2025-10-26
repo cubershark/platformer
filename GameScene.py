@@ -18,6 +18,7 @@ class GameScene():
 
     def get_scene_row(self):
         return self.scene_row
+    
     def set_scene_row(self,x):
         self.scene_row = x
     

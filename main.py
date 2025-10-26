@@ -27,10 +27,11 @@ scenes = {1:[
          ],
          2:[pygame.Rect(0, 300, 480, 60),
             pygame.Rect(0, 240, 190, 60),
-            pygame.Rect(260,150,70,150),
-            pygame.Rect(260,220,140,100)],
-         3:[pygame.Rect(0, 300, 480, 60)]}
-spikes = {1:[],2:[[(190,300),(225,260),(260,300)]],3:[[(170,300),(190,270),(210,300)]]}
+            pygame.Rect(260,170,70,150),
+            pygame.Rect(260,240,140,100)],
+         3:[pygame.Rect(0, 300, 480, 60),
+           pygame.Rect(340,240,140,60)]}
+spikes = {1:[],2:[[(190,300),(225,260),(260,300)]],3:[[(150,300),(170,270),(190,300)],[(300,300),(320,270),(340,300)]]}
 
 
 actualPlayer = Player(screen)
@@ -43,7 +44,7 @@ def set_up(id, x, y):
     coins = {
         1:[(180,60,40,50)],
         2:[],
-        3:[(210,190,40,50)]
+        3:[(230,210,40,50)]
     }
     
     list_scenes = scenes[id]
@@ -82,21 +83,20 @@ def move(x):
           
             actualPlayer.update_vx_vy(0,actualPlayer.get_vel_y())
     actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() + 3)
-    if actualPlayer.get_x() > 480:
+    if actualPlayer.get_x() > 430:
         if actualScene.get_scene_row() + 1 in scenes:
             actualScene.change_scene_row(1)
             set_up(actualScene.get_scene_row(),0,actualPlayer.get_y())
         else:
-            actualPlayer.update_xy(actualPlayer.get_x() + x,actualPlayer.get_y())
+            actualPlayer.update_xy(actualPlayer.get_x() - x,actualPlayer.get_y())
             actualPlayer.update_vx_vy(0,actualPlayer.get_vel_y())
     if actualPlayer.get_x() < 0:
         if actualScene.get_scene_row() - 1 in scenes:
             actualScene.change_scene_row(-1)
-            set_up(actualScene.get_scene_row(),480,actualPlayer.get_y())
+            set_up(actualScene.get_scene_row(),430,actualPlayer.get_y())
         else:
             actualPlayer.update_xy(actualPlayer.get_x() - x,actualPlayer.get_y())
             actualPlayer.update_vx_vy(0,actualPlayer.get_vel_y())
-
 originalPlayer = Player(screen)
 while running:
 
