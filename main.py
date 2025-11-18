@@ -1,6 +1,7 @@
 import pygame
 from GameScene import GameScene
-from Player import Player
+from MenuScene import MenuScene
+from Player import Player 
 
 pygame.init()
 screen = pygame.display.set_mode((480, 360))
@@ -13,6 +14,9 @@ red = (255,0,0)
 black = (0,0,0)
 font = pygame.font.Font('freesansbold.ttf', 30)
 score = 0
+lives = 3
+green_change = 0
+
 blocks = [
    
 ]
@@ -31,98 +35,77 @@ scenes = {1:[
             pygame.Rect(260,240,140,100)],
          3:[pygame.Rect(0, 300, 480, 60),
            pygame.Rect(340,240,140,60)]}
+
 spikes = {1:[],2:[[(190,300),(225,260),(260,300)]],3:[[(150,300),(170,270),(190,300)],[(300,300),(320,270),(340,300)]]}
 
+coins = {
+    1:[(180,60,40,50)],
+    2:[],
+    3:[(230,210,40,50)]
+}
+
+menu = MenuScene()
+menu.Render(screen)
+showMenu = True
+while showMenu:
+    for event in pygame.event.get():
+         if event.type == pygame.MOUSEBUTTONDOWN:
+             if event.button == 1:
+                 if menu.get_play_button().collidepoint(event.pos):
+                    showMenu = False
+    
 
 actualPlayer = Player(screen)
 actualScene = GameScene()
+actualScene.set_up(240,180,scenes,coins,blocks,selected_spikes,actualPlayer)
 
-def set_up(id, x, y):
-    list_scenes = []
-    list_coins = []
-    list_spikes = []
-    coins = {
-        1:[(180,60,40,50)],
-        2:[],
-        3:[(230,210,40,50)]
-    }
-    
-    list_scenes = scenes[id]
-    list_spikes = spikes[id]
-    list_coins = coins[id]
-    blocks.clear()
-    selected_spikes.clear()
-    actualScene.clear_selected_coins()
-    for list_scene in list_scenes:
-        blocks.append(list_scene)
-    for list_spike in list_spikes:
-        selected_spikes.append(list_spike)
-    for list_coin in list_coins:
-        actualScene.append_coins(list_coin)
-    actualPlayer.update_xy(x,y)
-set_up(actualScene.get_scene_row(),240,180)
-
-def fix_overlap():
-    if actualPlayer.get_vel_y() > 0:
-        actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() - actualPlayer.get_vel_y())
-        actualPlayer.update_vx_vy(actualPlayer.get_vel_x(),0)
-        actualPlayer.set_fall_tick(0)
-    elif actualPlayer.get_vel_y() < 0:
-        actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() - actualPlayer.get_vel_y())
-        actualPlayer.update_vx_vy(actualPlayer.get_vel_x(),0)
-        
-
-def move(x):
-    actualPlayer.update_xy(actualPlayer.get_x() + x,actualPlayer.get_y() -3)
-    player = pygame.draw.rect(screen, "orange", (actualPlayer.get_x(), actualPlayer.get_y(), 50, 50))
-    for block in blocks:
-        if player.colliderect(block):
-            actualPlayer.update_xy(actualPlayer.get_x() - x,actualPlayer.get_y())
-            player = pygame.draw.rect(screen, "orange",
-                                      (actualPlayer.get_x(), actualPlayer.get_y(), 50, 50))
-          
-            actualPlayer.update_vx_vy(0,actualPlayer.get_vel_y())
-    actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() + 3)
-    if actualPlayer.get_x() > 430:
-        if actualScene.get_scene_row() + 1 in scenes:
-            actualScene.change_scene_row(1)
-            set_up(actualScene.get_scene_row(),0,actualPlayer.get_y())
-        else:
-            actualPlayer.update_xy(actualPlayer.get_x() - x,actualPlayer.get_y())
-            actualPlayer.update_vx_vy(0,actualPlayer.get_vel_y())
-    if actualPlayer.get_x() < 0:
-        if actualScene.get_scene_row() - 1 in scenes:
-            actualScene.change_scene_row(-1)
-            set_up(actualScene.get_scene_row(),430,actualPlayer.get_y())
-        else:
-            actualPlayer.update_xy(actualPlayer.get_x() - x,actualPlayer.get_y())
-            actualPlayer.update_vx_vy(0,actualPlayer.get_vel_y())
 originalPlayer = Player(screen)
 while running:
-
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
+    
     screen.fill("blue")
     text = font.render(f"score: {score}", True, red,black)
+    text2 = font.render(f"lives: {lives}",True,red,black)
     textRect = text.get_rect()
+    textRect2 = text2.get_rect()
     textRect.center = (60 + len(str(score)) * 8,30)
+    textRect2.center = (410 - len(str(score)) * 8,30)
     screen.blit(text,textRect)
+    screen.blit(text2,textRect2)
     actualPlayer.update_vx_vy(actualPlayer.get_vel_x() * 0.6,actualPlayer.get_vel_y())
+   
     actualPlayer.set_up_sprite()
     actualPlayer.create_eyes(actualPlayer.get_x() + actualPlayer.get_vel_x(), actualPlayer.get_y() + actualPlayer.get_vel_y(), screen)
+    actualPlayer.set_green(actualPlayer.get_green() - green_change)
+    if actualPlayer.get_green() < 150 and not green_change == 0:
+        green_change -= 0.75
+        print(green_change)
+    else:
+        actualPlayer.set_green(150)
+        green_change = 0
+    
     for block in blocks:
         pygame.draw.rect(screen, "purple", block)
         if actualPlayer.collide(block):
-            fix_overlap()
+            actualPlayer.fix_overlap()
     for selected_spike in selected_spikes:
         spike = pygame.draw.polygon(screen, "red",selected_spike)
         
         if actualPlayer.collide(spike):
-            actualScene.set_scene_row(1)
-            set_up(actualScene.get_scene_row(),240,180)
-            score = 0
+            
+            if lives > 1:
+                lives -= 1
+                actualPlayer.update_vx_vy(actualPlayer.get_vel_x(),-10)
+                green_change = 12
+                print(green_change)
+            else:
+                lives = 3
+                actualScene.set_scene_row(1)
+                actualScene.set_up(240,180,scenes,coins,blocks,selected_spikes,actualPlayer)
+                score = 0
     for selected_coin in actualScene.get_selected_coins():
         c = pygame.draw.ellipse(screen,(255,164,0),(selected_coin))
         pygame.draw.ellipse(screen,(255,212,0),(selected_coin),5)
@@ -145,7 +128,7 @@ while running:
 
     pygame.display.flip()
     actualPlayer.update_xy(actualPlayer.get_x(),actualPlayer.get_y() + actualPlayer.get_vel_y())
-    move(actualPlayer.get_vel_x())
+    actualPlayer.move(actualPlayer.get_vel_x(),blocks,scenes,coins,selected_spikes,actualScene,screen)
     actualPlayer.set_fall_tick(actualPlayer.get_fall_tick() + 1)
 
     dt = clock.tick(60) / 1000
@@ -159,7 +142,6 @@ pygame.quit()
 # #     game.runGame()
 
 # import pygame
-# from GameScene import GameScene
 # from MenuScene import MenuScene
 # def run_game(width, height, fps, starting_scene):
 #     pygame.init()
